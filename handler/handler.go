@@ -94,6 +94,13 @@ func (h *Handler) allowEntry(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Make sure there is a Discord snowflake in the request
+	if req.Snowflake == "" {
+		h.logger.Error("No discord in request")
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
 	// If the address is not in the list, return an error
 	if !stringInSlice(address, addresses) {
 		h.logger.Errorf("Address %s not in list", address)
@@ -115,7 +122,6 @@ func (h *Handler) allowEntry(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-
 	resp.DiscordRoleSet = true
 
 	json.NewEncoder(w).Encode(resp)
@@ -141,13 +147,6 @@ func (h *Handler) getStatus(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Make sure there is a Discord snowflake in the request
-	if req.Snowflake == "" {
-		h.logger.Error("No discord in request")
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-
 	var (
 		address   = req.Address
 		snowflake = req.Snowflake
@@ -169,16 +168,18 @@ func (h *Handler) getStatus(w http.ResponseWriter, r *http.Request) {
 		resp.AddressInList = true
 	}
 
-	// Make a request to Discord to fetch user
-	m, err := h.discord.GuildMember(guildID, snowflake)
-	if err != nil {
-		h.logger.Errorf("Error fetching member: %s", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
+	if snowflake != "" {
+		// Make a request to Discord to fetch user
+		m, err := h.discord.GuildMember(guildID, snowflake)
+		if err != nil {
+			h.logger.Errorf("Error fetching member: %s", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
 
-	// Check if user has role
-	resp.DiscordRoleSet = stringInSlice(roleID, m.Roles)
+		// Check if user has role
+		resp.DiscordRoleSet = stringInSlice(roleID, m.Roles)
+	}
 
 	json.NewEncoder(w).Encode(resp)
 }
