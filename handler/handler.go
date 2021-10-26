@@ -80,13 +80,6 @@ func (h *Handler) allowEntry(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Make sure there is a Discord snowflake in the request
-	if req.Snowflake == "" {
-		h.logger.Error("No discord in request")
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-
 	var (
 		address   = req.Address
 		snowflake = req.Snowflake
