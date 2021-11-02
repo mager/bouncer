@@ -16,7 +16,7 @@ import (
 	"go.uber.org/zap"
 )
 
-func Register(
+func Init(
 	lc fx.Lifecycle,
 	logger *zap.SugaredLogger,
 	router *mux.Router,

@@ -29,7 +29,7 @@ func Register(
 	router *mux.Router,
 	premint premint.PremintClient,
 ) {
-	logger, router, premint, cfg, discord := register.Register(lc, logger, router, premint)
+	logger, router, premint, cfg, discord := register.Init(lc, logger, router, premint)
 
 	handler.New(logger, router, premint, cfg, discord)
 }

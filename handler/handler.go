@@ -7,6 +7,7 @@ import (
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/gorilla/mux"
+	"github.com/kyokomi/emoji/v2"
 	"github.com/mager/bouncer/config"
 	"github.com/mager/bouncer/premint"
 	"go.uber.org/zap"
@@ -112,7 +113,9 @@ func (h *Handler) allowEntry(w http.ResponseWriter, r *http.Request) {
 
 	// Make a request to Discord to add role
 	var (
-		roleID  = "901476988349468702"
+		// Premint role
+		roleID = "901476988349468702"
+		// Server ID
 		guildID = "892132883844726814"
 	)
 
@@ -123,6 +126,19 @@ func (h *Handler) allowEntry(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	resp.DiscordRoleSet = true
+	h.logger.Infof("Successfully added Premint role to user %d", snowflake)
+
+	// Fetch user
+	user, err := h.discord.User(snowflake)
+	if err != nil {
+		h.logger.Info("Error fetching user")
+	}
+
+	// Send a welcome message
+	_, err = h.discord.ChannelMessageSend("904851056419287050", emoji.Sprintf(":wave: Welcome to the Waveblocks Discord server %s! :water_wave:", user.Mention()))
+	if err != nil {
+		h.logger.Info("Error sending message")
+	}
 
 	json.NewEncoder(w).Encode(resp)
 }
